@@ -6,6 +6,7 @@ name: Maven Package
 on:
   workflow_dispatch:
   push:
+    branches: [master]
   pull_request:
 
 jobs:
@@ -33,4 +34,5 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: Package
-        path: staging
+        path: staging/*
+        if-no-files-found: error
