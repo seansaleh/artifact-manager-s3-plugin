@@ -6,7 +6,7 @@ name: Maven Package
 on:
   workflow_dispatch:
   push:
-    branches: [master]
+    branches: [ $default-branch ]
   pull_request:
 
 jobs:
@@ -36,3 +36,7 @@ jobs:
         name: Package
         path: staging/*
         if-no-files-found: error
+    - name: Publish to GitHub Packages Apache Maven
+      run: mvn deploy
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
