@@ -5,18 +5,17 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.19</version>
+    <version>4.31</version>
     <relativePath />
   </parent>
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>artifact-manager-s3</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
 
   <properties>
-    <revision>1.16</revision>
-    <changelist>-SNAPSHOT</changelist>
-    <jenkins.version>2.235.5</jenkins.version>
+    <changelist>999999-SNAPSHOT</changelist>
+    <jenkins.version>2.324</jenkins.version>
     <java.level>8</java.level>
     <useBeta>true</useBeta>
   </properties>
@@ -42,17 +41,23 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>aws-global-configuration</artifactId>
-      <version>1.6</version>
+      <version>1.7</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jakarta.xml.bind</groupId>
+          <artifactId>jakarta.xml.bind-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.jclouds.provider</groupId>
       <artifactId>aws-s3</artifactId>
-      <version>2.2.1</version>
+      <version>2.5.0</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>aws-credentials</artifactId>
-      <version>1.29</version>
+      <version>191.vcb_f183ce58b_9</version>
       <exclusions>
         <exclusion>
           <groupId>com.google.code.findbugs</groupId>
@@ -142,24 +147,8 @@
     <dependency>
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.findify</groupId>
-      <artifactId>s3mock_2.12</artifactId>
-      <version>0.2.5</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>aws-java-sdk</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>aws-java-sdk-s3</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -216,14 +205,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>io.jenkins.plugins</groupId>
-        <artifactId>jaxb</artifactId>
-        <version>2.3.0.1</version>
-    </dependency>
-    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.15.3</version>
+      <version>1.16.3</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -234,58 +218,52 @@
           <groupId>org.slf4j</groupId>
           <artifactId>*</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency> <!-- see maskClasses config -->
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>30.1.1-jre</version>
     </dependency>
   </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.235.x</artifactId>
-        <version>872.v03c18fa35487</version>
+        <artifactId>bom-2.249.x</artifactId> <!-- TODO weekly -->
+        <version>966.v3857b7c82032</version>
         <scope>import</scope>
         <type>pom</type>
-      </dependency>
-      <dependency> <!-- JENKINS-50520: picked up from jclouds; to match the Guice version in core -->
-        <groupId>com.google.inject.extensions</groupId>
-        <artifactId>guice-assistedinject</artifactId>
-        <version>4.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>aws-java-sdk</artifactId>
-        <version>1.11.995</version>
       </dependency>
       <dependency>
         <groupId>joda-time</groupId>
         <artifactId>joda-time</artifactId>
-        <version>2.10.10</version>
+        <version>2.10.14</version>
       </dependency>
       <dependency>
         <groupId>com.google.errorprone</groupId>
         <artifactId>error_prone_annotations</artifactId>
-        <version>2.7.1</version>
+        <version>2.11.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
   <build>
-      <plugins>
-          <plugin>
-            <groupId>org.jenkins-ci.tools</groupId>
-            <artifactId>maven-hpi-plugin</artifactId>
-            <configuration>
-              <!-- JENKINS-50520: since we need a custom version of Guava -->
-              <maskClasses>com.google.common.</maskClasses>
-            </configuration>
-          </plugin>
-
-      </plugins>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <configuration>
+          <rules combine.children="append">
+            <requireSameVersions>
+              <dependencies>
+                <dependency>com.google.inject:guice</dependency>
+                <dependency>com.google.inject.extensions:guice-assistedinject</dependency>
+              </dependencies>
+            </requireSameVersions>
+          </rules>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <repositories>

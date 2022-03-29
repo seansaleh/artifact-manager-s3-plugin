@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 import java.util.List;
 import java.util.ArrayList;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.apache.commons.lang.StringUtils;
 import org.jclouds.ContextBuilder;
@@ -242,7 +242,7 @@ public class S3BlobStore extends BlobStoreProvider {
         return () -> sessionCredentials;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public URI toURI(@NonNull String container, @NonNull String key) {
         assert container != null;
