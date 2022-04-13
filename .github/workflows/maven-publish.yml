@@ -12,7 +12,7 @@ on:
         default: "1145.vb_cf6cf6ed960"
         type: string
       createRelease:
-        description: "Weather or not the build should trigger a new release on Github"
+        description: "Wether or not the build should trigger a new release on Github"
         required: false
         default: true
         type: boolean
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Deploy Job"
     needs: build
-    if: github.event.inputs.createRelease == 'true'
+    if: ${{ github.event.inputs.createRelease == 'true' }}
     permissions:
       contents: read
       packages: write
