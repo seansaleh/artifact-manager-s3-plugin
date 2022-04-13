@@ -84,6 +84,4 @@ jobs:
         draft: ${{ github.event.inputs.buildTag != 'latest' }}
         title: "${{ github.event.inputs.buildTag }} Release Build"
         files: |
-          Package
-          LICENSE.txt
-          README.md
+          *.hpi
