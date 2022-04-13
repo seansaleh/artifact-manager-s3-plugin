@@ -64,13 +64,16 @@ jobs:
     steps:
     - name: debug input variables
       run: |
-        echo pre-release: ${{ github.event.inputs.buildTag != 'latest' }}
-        echo draft: ${{ github.event.inputs.buildTag != 'latest' }}
+        echo pre-release: ${{ github.event.inputs.buildTag != latest }}
+        echo draft: ${{ github.event.inputs.buildTag != latest }}
     
     - name: Download package
       uses: actions/download-artifact@v3
       with:
         name: Package
+    
+    - name: Check files
+      run: ls -al
     
     - name: Create release
       uses: "marvinpinto/action-automatic-releases@latest"
