@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Deploy Job"
     needs: build
-    if: github.event.inputs.createRelease
+    if: github.event.inputs.createRelease == 'true'
     permissions:
       contents: read
       packages: write
