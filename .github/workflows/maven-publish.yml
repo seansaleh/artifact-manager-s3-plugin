@@ -60,11 +60,13 @@ jobs:
     name: "Deploy Job"
     needs: build
     if: ${{ github.event.inputs.createRelease == true }}
-    permissions:
-      contents: read
-      packages: write
       
     steps:
+    - name: debug input variables
+      run: |
+        echo pre-release: ${{ github.event.inputs.buildTag != 'latest' }}
+        echo draft: ${{ github.event.inputs.buildTag != 'latest' }}
+    
     - name: Download package
       uses: actions/download-artifact@v3
       with:
