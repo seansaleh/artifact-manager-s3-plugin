@@ -78,8 +78,8 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         automatic_release_tag: ${{ github.event.inputs.buildTag }}
-        prerelease: ${{ github.event.inputs.buildTag != "latest" }}
-        draft: ${{ github.event.inputs.buildTag != "latest" }}
+        prerelease: ${{ github.event.inputs.buildTag != 'latest' }}
+        draft: ${{ github.event.inputs.buildTag != 'latest' }}
         title: "${{ github.event.inputs.buildTag }} Release Build"
         files: |
           Package
