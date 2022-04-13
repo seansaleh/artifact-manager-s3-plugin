@@ -41,9 +41,6 @@ jobs:
     runs-on: ubuntu-latest
     name: "Deploy Job"
     needs: build
-    permissions:
-      contents: read
-      packages: write
       
     steps:
     - name: Download package
@@ -56,10 +53,8 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         automatic_release_tag: 'latest'
-        prerelease: false
+        prerelease: ${{ GITHUB_EVENT_NAME == 'pull_request' }}
         draft: false
         title: "Latest Release Build"
         files: |
           Package
-          LICENSE.txt
-          README.md
