@@ -5,6 +5,12 @@ name: Maven Package
 
 on:
   workflow_dispatch:
+    inputs:
+      manualVersion:
+        description: "Version number for the project"
+        required: false
+        default: "1145.vb_cf6cf6ed960"
+        type: string
   push:
     branches: [master]
   pull_request:
@@ -28,7 +34,7 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Maven
-      run: mvn -Drevision=1145.vb_cf6cf6ed960 -B package --file pom.xml
+      run: mvn -Drevision=${{ github.event.inputs.manualVersion }} -B package --file pom.xml
       
     - run: mkdir staging && cp target/*.hpi staging
     - uses: actions/upload-artifact@v2
