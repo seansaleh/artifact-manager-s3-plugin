@@ -11,6 +11,20 @@ on:
         required: false
         default: "1145.vb_cf6cf6ed960"
         type: string
+      createRelease:
+        description: "Weather or not the build should trigger a new release on Github"
+        required: false
+        default: true
+        type: boolean
+      buildTag:
+        description: "Build tag to use for action (change if needed)"
+        required: false
+        default: "latest"
+        type: choice
+        options:
+        - latest
+        - pre-release
+        - dev-build
   push:
     branches: [master]
   pull_request:
@@ -19,6 +33,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    name: "Build Job"
     permissions:
       contents: read
       packages: write
@@ -35,10 +50,38 @@ jobs:
 
     - name: Build with Maven
       run: mvn -Drevision=${{ github.event.inputs.manualVersion }} -B package --file pom.xml
-      
+    
     - run: mkdir staging && cp target/*.hpi staging
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: Package
         path: staging/*
         if-no-files-found: error
+        
+  deploy:
+    runs-on: ubuntu-latest
+    name: "Deploy Job"
+    needs: build
+    if: ${{ github.event.inputs.createRelease }}
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+    - name: Download package
+    - uses: actions/download-artifact@v3
+      with:
+        name: Package
+    
+    - name: Create release
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        automatic_release_tag: ${{ github.event.inputs.buildTag }}
+        prerelease: ${{ github.event.inputs.buildTag != "latest" }}
+        draft: ${{ github.event.inputs.buildTag != "latest" }}
+        title: "${{ github.event.inputs.buildTag }} Release Build"
+        files: |
+          Package
+          LICENSE.txt
+          README.md
