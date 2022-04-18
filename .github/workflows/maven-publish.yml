@@ -1,18 +1,36 @@
 # This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
 # For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
 
-name: Maven Package
+name: Manual Build, Package & Release
 
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
-  pull_request:
+    inputs:
+      manualVersion:
+        description: "Version number for the project"
+        required: false
+        default: "1145.vb_cf6cf6ed960"
+        type: string
+      createRelease:
+        description: "Create Github release"
+        required: false
+        default: true
+        type: boolean
+      buildTag:
+        description: "Build tag to use for action (change if needed)"
+        required: false
+        default: latest
+        type: choice
+        options:
+        - latest
+        - pre-release
+        - dev-build
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    name: "Build Job"
     permissions:
       contents: read
       packages: write
@@ -28,11 +46,42 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Maven
-      run: mvn -Drevision=1145.vb_cf6cf6ed960 -B package --file pom.xml
-      
+      run: mvn -Drevision=${{ github.event.inputs.manualVersion }} -B package --file pom.xml
+    
     - run: mkdir staging && cp target/*.hpi staging
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: Package
         path: staging/*
         if-no-files-found: error
+        
+  deploy:
+    runs-on: ubuntu-latest
+    name: "Deploy Job"
+    needs: build
+    if: ${{ github.event.inputs.createRelease == 'true' }}
+      
+    steps:
+    - name: debug input variables
+      run: |
+        echo pre-release: ${{ github.event.inputs.buildTag != 'latest' }}
+        echo draft: ${{ github.event.inputs.buildTag != 'latest' }}
+    
+    - name: Download package
+      uses: actions/download-artifact@v3
+      with:
+        name: Package
+    
+    - name: Check files
+      run: ls -al
+    
+    - name: Create release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        automatic_release_tag: ${{ github.event.inputs.buildTag }}
+        prerelease: ${{ github.event.inputs.buildTag != 'latest' }}
+        draft: ${{ github.event.inputs.buildTag != 'latest' }}
+        title: "${{ github.event.inputs.manualVersion }}  Release Build"
+        files: |
+          *.hpi
