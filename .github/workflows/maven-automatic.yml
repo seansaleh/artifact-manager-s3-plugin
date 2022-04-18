@@ -37,25 +37,3 @@ jobs:
         name: Package
         path: staging/*
         if-no-files-found: error
-        
-  deploy:
-    runs-on: ubuntu-latest
-    name: "Deploy Job"
-    needs: build
-      
-    steps:
-    - name: Download package
-      uses: actions/download-artifact@v3
-      with:
-        name: Package
-    
-    - name: Create release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        automatic_release_tag: 'latest'
-        prerelease: ${{ env.GITHUB_EVENT_NAME == 'pull_request' }}
-        draft: false
-        title: "Latest Release Build"
-        files: |
-          *.hpi
