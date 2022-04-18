@@ -1,7 +1,7 @@
 # This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
 # For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
 
-name: Maven Package
+name: Manual Build, Package & Release
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
         default: "1145.vb_cf6cf6ed960"
         type: string
       createRelease:
-        description: "Wether or not the build should trigger a new release on Github"
+        description: "Create Github release"
         required: false
         default: true
         type: boolean
@@ -82,6 +82,6 @@ jobs:
         automatic_release_tag: ${{ github.event.inputs.buildTag }}
         prerelease: ${{ github.event.inputs.buildTag != 'latest' }}
         draft: ${{ github.event.inputs.buildTag != 'latest' }}
-        title: "${{ github.event.inputs.buildTag }}  Release Build"
+        title: "${{ github.event.inputs.manualVersion }}  Release Build"
         files: |
           *.hpi
