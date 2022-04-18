@@ -82,6 +82,6 @@ jobs:
         automatic_release_tag: ${{ github.event.inputs.buildTag }}
         prerelease: ${{ github.event.inputs.buildTag != 'latest' }}
         draft: ${{ github.event.inputs.buildTag != 'latest' }}
-        title: "${{ github.event.inputs.buildTag }}  Release Build"
+        title: "${{ github.event.inputs.manualVersion }}  Release Build"
         files: |
           *.hpi
