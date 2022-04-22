@@ -46,7 +46,7 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Maven
-      run: mvn -Drevision=${{ github.event.inputs.manualVersion }} -B package --file pom.xml
+      run: mvn -Dchangelist=${{ github.event.inputs.manualVersion }} -Drevision=${{ github.event.inputs.manualVersion }} -B package --file pom.xml
     
     - run: mkdir staging && cp target/*.hpi staging
     - uses: actions/upload-artifact@v3
