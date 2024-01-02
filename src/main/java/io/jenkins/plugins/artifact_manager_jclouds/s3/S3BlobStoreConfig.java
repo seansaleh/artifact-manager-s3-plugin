@@ -25,9 +25,8 @@
 package io.jenkins.plugins.artifact_manager_jclouds.s3;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -45,14 +44,18 @@ import com.amazonaws.services.s3.model.BucketAccelerateStatus;
 import com.amazonaws.services.s3.model.SetBucketAccelerateConfigurationRequest;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.Failure;
 import hudson.util.FormValidation;
+
 import io.jenkins.plugins.artifact_manager_jclouds.JCloudsVirtualFile;
 import io.jenkins.plugins.aws.global_configuration.AbstractAwsGlobalConfiguration;
 import io.jenkins.plugins.aws.global_configuration.CredentialsAwsGlobalConfiguration;
+
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -63,7 +66,7 @@ import org.jenkinsci.Symbol;
  */
 @Symbol("s3")
 @Extension
-public class S3BlobStoreConfig extends AbstractAwsGlobalConfiguration {
+public final class S3BlobStoreConfig extends AbstractAwsGlobalConfiguration {
 
     private static final String BUCKET_REGEXP = "^([a-z]|(\\d(?!\\d{0,2}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})))([a-z\\d]|(\\.(?!(\\.|-)))|(-(?!\\.))){1,61}[a-z\\d\\.]$";
     private static final Pattern bucketPattern = Pattern.compile(BUCKET_REGEXP);
@@ -99,16 +102,18 @@ public class S3BlobStoreConfig extends AbstractAwsGlobalConfiguration {
     private String customEndpoint;
     
     private String customSigningRegion;
-    
+
     private final boolean deleteArtifacts;
     
     private final boolean deleteStashes;
-    
+
     /**
      * class to test configuration against Amazon S3 Bucket.
      */
     private static class S3BlobStoreTester extends S3BlobStore {
         private static final long serialVersionUID = -3645770416235883487L;
+
+        @SuppressFBWarnings(value = "SE_TRANSIENT_FIELD_NOT_RESTORED", justification = "This transient field is only modified from the class constructor.")
         private transient S3BlobStoreConfig config;
 
         S3BlobStoreTester(String container, String prefix, boolean useHttp,
@@ -271,12 +276,15 @@ public class S3BlobStoreConfig extends AbstractAwsGlobalConfiguration {
         return ExtensionList.lookupSingleton(S3BlobStoreConfig.class);
     }
 
+    @VisibleForTesting
+    static Supplier<AmazonS3ClientBuilder> clientBuilder = AmazonS3ClientBuilder::standard;
+
     /**
     *
     * @return an AmazonS3ClientBuilder using the region or not, it depends if a region is configured or not.
     */
     AmazonS3ClientBuilder getAmazonS3ClientBuilder() {
-        AmazonS3ClientBuilder ret = AmazonS3ClientBuilder.standard();
+        AmazonS3ClientBuilder ret = clientBuilder.get();
 
         if (StringUtils.isNotBlank(customEndpoint)) {
             String resolvedCustomSigningRegion = customSigningRegion;

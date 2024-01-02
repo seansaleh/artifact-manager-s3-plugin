@@ -23,7 +23,7 @@
  */
 package io.jenkins.plugins.artifact_manager_jclouds;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.FailingHttpStatusCodeException;
 import hudson.Functions;
 import hudson.init.impl.InstallUncaughtExceptionHandler;
 import hudson.model.Result;
@@ -341,8 +341,11 @@ public class NetworkTest {
         WorkflowJob p = r.createProject(WorkflowJob.class, "p");
         p.setDefinition(new CpsFlowDefinition("node('remote') {writeFile file: 'f', text: '.'; stash 'stuff'}", true));
         MockApiMetadata.handleRemoveBlob("container", "p/1/stashes/stuff.tgz", () -> {throw new ContainerNotFoundException("container", "sorry about your stashes");});
-        r.buildAndAssertSuccess(p);
-        expectLogMessage("container not found: sorry about your stashes");
+        WorkflowRun b = r.buildAndAssertSuccess(p);
+        if (!JenkinsRule.getLog(b).contains("container not found: sorry about your stashes")) {
+            // TODO delete after https://github.com/jenkinsci/workflow-job-plugin/pull/357
+            expectLogMessage("container not found: sorry about your stashes");
+        }
     }
 
     // Interrupts probably never delivered during HTTP requests (maybe depends on servlet container?).

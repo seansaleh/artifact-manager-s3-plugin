@@ -79,6 +79,8 @@ import org.jenkinsci.plugins.workflow.flow.StashManager;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import static io.jenkins.plugins.artifact_manager_jclouds.TikaUtil.detectByTika;
+
 /**
  * Jenkins artifact/stash implementation using any blob store supported by Apache jclouds.
  * To offer a new backend, implement {@link BlobStoreProvider}.
@@ -126,7 +128,7 @@ public final class JCloudsArtifactManager extends ArtifactManager implements Sta
     public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts)
             throws IOException, InterruptedException {
         LOGGER.log(Level.FINE, "Archiving from {0}: {1}", new Object[] { workspace, artifacts });
-        Map<String, String> contentTypes = workspace.act(new ContentTypeGuesser(new ArrayList<>(artifacts.keySet()), listener));
+        Map<String, String> contentTypes = workspace.act(new ContentTypeGuesser(new ArrayList<>(artifacts.values()), listener));
         LOGGER.fine(() -> "guessing content types: " + contentTypes);
         BlobStore blobStore = getContext().getBlobStore();
 
@@ -143,7 +145,7 @@ public final class JCloudsArtifactManager extends ArtifactManager implements Sta
                 String blobPath = getBlobPath(path);
                 Blob blob = blobStore.blobBuilder(blobPath).build();
                 blob.getMetadata().setContainer(provider.getContainer());
-                blob.getMetadata().getContentMetadata().setContentType(contentTypes.get(entry.getKey()));
+                blob.getMetadata().getContentMetadata().setContentType(contentTypes.get(entry.getValue()));
                 long fileSize = fileSizes.get(entry.getValue());
                 if (fileSize > multipartSize) {
                     BlobStoreProvider.MultipartUploader uploader = provider.initiateMultipartUpload(blob);
@@ -204,9 +206,14 @@ public final class JCloudsArtifactManager extends ArtifactManager implements Sta
                     if (contentType == null) {
                         contentType = URLConnection.guessContentTypeFromName(theFile.getName());
                     }
+                    if (contentType == null) {
+                        contentType = detectByTika(theFile);
+                    }
                     contentTypes.put(relPath, contentType);
                 } catch (IOException e) {
                     Functions.printStackTrace(e, listener.error("Unable to determine content type for file: " + theFile));
+                    // A content type must be specified; otherwise, the metadata signature will be computed from data that includes "Content-Type:", but no such HTTP header will be sent, and AWS will reject the request.
+                    contentTypes.put(relPath, "application/octet-stream");
                 }
             }
             return contentTypes;
